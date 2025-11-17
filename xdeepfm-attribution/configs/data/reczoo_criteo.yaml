@@ -1,0 +1,89 @@
+# 数据集：reczoo/Criteo_x1（本地缓存 ZIP，原始格式同 Kaggle Criteo）
+dataset:
+  provider: "local_csv"  # 数据提供者类型，这里是本地CSV文件
+  name: "reczoo_criteo_local"  # 数据集名称
+  # 已经提前划分好的本地 CSV 路径（不再从 train 随机划分）
+  split_paths:
+    train: "./src/cache/local_datasets/reczoo_criteo/train.csv"
+    valid: "./src/cache/local_datasets/reczoo_criteo/valid.csv"
+    test: "./src/cache/local_datasets/reczoo_criteo/test.csv"
+  csv_format:
+    header: true  # CSV 带表头
+    delimiter: ","  # 使用逗号分隔
+
+task:
+  type: "binary_classification"  # 任务类型：二分类
+  label_column: "label"  # 标签列的名称
+
+features:
+  categorical:  # 类别特征列表
+    - "C1"
+    - "C2"
+    - "C3"
+    - "C4"
+    - "C5"
+    - "C6"
+    - "C7"
+    - "C8"
+    - "C9"
+    - "C10"
+    - "C11"
+    - "C12"
+    - "C13"
+    - "C14"
+    - "C15"
+    - "C16"
+    - "C17"
+    - "C18"
+    - "C19"
+    - "C20"
+    - "C21"
+    - "C22"
+    - "C23"
+    - "C24"
+    - "C25"
+    - "C26"
+  numerical:  # 数值特征列表
+    - "I1"
+    - "I2"
+    - "I3"
+    - "I4"
+    - "I5"
+    - "I6"
+    - "I7"
+    - "I8"
+    - "I9"
+    - "I10"
+    - "I11"
+    - "I12"
+    - "I13"
+
+preprocess:
+  # cache_dir: "./cache/local_datasets"  # 预处理缓存目录
+  output_dir: "./data/processed/reczoo_criteo"  # 预处理后输出目录
+  max_sample_ratio: 0.5  # 按比例下采样每个 split（0~1），例如 0.03 表示保留 3%
+  # max_sample: 0  # 绝对数量上限（>0 生效）；与 ratio 同时存在时取 min
+  max_sample_seed: 42  # 采样随机种子
+
+  split:
+    strategy: "random"  # 数据集划分策略：随机划分
+    random:
+      train_ratio: 0.7  # 训练集比例
+      valid_ratio: 0.2  # 验证集比例
+      test_ratio: 0.1   # 测试集比例
+      seed: 42  # 随机种子，保证可复现性
+
+  categorical_encoding:
+    method: "index"  # 类别特征编码方法：索引编码
+    min_freq: 10  # 最小词频，低于此频率的特征值将被视为OOV
+    oov_token: "__OOV__"  # 未登录词（Out-of-Vocabulary）的表示符号
+
+  numerical_processing:
+    fill_na: 0.0  # 数值特征缺失值填充为 0.0
+    scaler: "standard"  # 数值特征缩放方法：标准化（StandardScaler）
+
+dataloader:
+  batch_size: 4096  # 每批次的样本数量
+  num_workers: 4  # 用于数据加载的子进程数量
+  pin_memory: true  # 是否将数据加载到CUDA的pinned memory中，以加速CPU到GPU的数据传输
+  shuffle_train: true  # 是否在每个epoch开始时打乱训练数据

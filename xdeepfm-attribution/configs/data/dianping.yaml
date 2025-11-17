@@ -1,0 +1,86 @@
+# 点评序列推荐数据集（本地 txt 文件）
+dataset:
+  provider: "local_csv"
+  name: "dianping_actions"
+  path: "./src/cache/local_datasets/dianping/actions.txt"
+  description: >
+    来自 Dianping（大众点评）匿名化数据集，包含 616,331 名用户、10,979 家餐厅、3,868,306 条交互。
+    每行格式：user_id,item_id,rating,date,category_ids（以 | 分隔）。
+  csv_format:
+    header: false
+    delimiter: ","
+    column_names: ["user_id", "item_id", "rating", "date", "category_ids"]
+    multi_value_columns:
+      category_ids:
+        separator: "|"
+        max_tokens: 16
+
+task:
+  type: "regression"
+  label_column: "rating"        # rating 字段若为 "-"，预处理阶段需要转为缺失或默认分值
+
+features:
+  categorical:
+    - "user_id"
+    - "item_id"
+    - "primary_category"        # 预处理时可取 category_ids 的首个元素
+    - "category_id_1"
+    - "category_id_2"
+    - "category_id_3"
+    - "category_id_4"
+    - "category_id_5"
+    - "category_id_6"
+    - "category_id_7"
+    - "category_id_8"
+    - "category_id_9"
+    - "category_id_10"
+    - "category_id_11"
+    - "category_id_12"
+    - "category_id_13"
+    - "category_id_14"
+    - "category_id_15"
+    - "category_id_16"
+  numerical:
+    # - "rating"
+    - "visit_hour"              # 由 date 字段解析出的小时（0-23）
+    - "visit_weekday"           # 由 date 字段解析出的星期（0-6）
+    - "category_count"          # 该餐馆所属类别数量
+
+preprocess:
+  cache_dir: "./cache/local_datasets"
+  output_dir: "./data/processed/dianping"
+
+  # 本地文件无需 HuggingFace 下载，只需读取 txt 并解析
+  reader:
+    parse_date: true
+    date_format: "%Y%m%d"
+    drop_invalid_label: true    # rating 缺失直接丢弃
+
+  split:
+    strategy: "time"
+    time_column: "date"
+    group_column: "user_id"
+    time_split_percentiles:
+      train: 0.7
+      valid: 0.15
+      test: 0.15
+    random:
+      train_ratio: 0.8
+      valid_ratio: 0.1
+      test_ratio: 0.1
+      seed: 42
+
+  categorical_encoding:
+    method: "index"
+    min_freq: 5
+    oov_token: "__OOV__"
+
+  numerical_processing:
+    fill_na: 0.0
+    scaler: "standard"
+
+dataloader:
+  batch_size: 2048
+  num_workers: 4
+  pin_memory: true
+  shuffle_train: true

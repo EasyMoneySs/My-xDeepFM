@@ -1,0 +1,20 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.egg-info
+
+# Data artifacts (raw/processed/cache)
+/data/
+/cache/
+/src/cache/
+/configs/data/data/processed/
+/runs/
+*.csv
+*.tsv
+*.parquet
+*.zip
+
+# Checkpoints
+*.pt
+*.pth
+*.ckpt

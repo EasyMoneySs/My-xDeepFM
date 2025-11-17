@@ -1,0 +1,1 @@
+Do not use any rm commands arbitrarily. When running code files in the repository, always prioritize using existing data. In particular, if the required datasets or models already exist in the local Hugging Face cache, the agent must NOT re-download them. Always reuse local cached resources whenever possible.

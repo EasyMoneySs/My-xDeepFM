@@ -1,0 +1,11 @@
+experiment:
+  name: "xdeepfm_dianping"
+
+  data_config: "configs/data/dianping.yaml"
+  model_config: "configs/model/xdeepfm.yaml"
+  train_config: "configs/train/default.yaml"
+
+  output_dir: "./runs/xdeepfm_dianping"
+  use_timestamp: true
+
+  seed: 42

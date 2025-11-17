@@ -1,0 +1,40 @@
+model:
+  name: "xDeepFM"
+
+  # Embedding
+  embedding_dim: 10   # 与论文保持一致
+
+  # FM 部分（线性 + 二阶）
+  fm:
+    use_fm: true
+    # 是否包含 dense 特征的一阶项
+    use_first_order_dense: true
+    use_first_order_categorical: true
+
+  # DNN 部分（隐式高阶 bit-wise 交互）
+  dnn:
+    use_dnn: true
+    input: "concat_dense_flattened_embeddings"
+    hidden_units: [400, 400]
+    activation: "relu"
+    dropout: 0.0
+    batch_norm: false
+
+  # CIN 部分（显式高阶 vector-wise 交互）
+  cin:
+    use_cin: true
+    layer_sizes: [200, 200, 200]   # Criteo 上推荐配置
+    activation: "identity"         # 论文中实验显示不加非线性效果更好
+    # 是否使用低秩分解（可选，控制参数量）
+    low_rank:
+      enabled: false
+      rank: 16
+
+  # 输出层
+  output_layer:
+    # 将 FM 输出（标量）、DNN 输出（向量）、CIN 输出（向量）拼接后
+    # 通过一层全连接映射为单一 logit
+    combine:
+      inputs: ["fm", "dnn", "cin"]
+      hidden_units: []             # 空列表表示直接 Linear -> 1
+      activation: "none"

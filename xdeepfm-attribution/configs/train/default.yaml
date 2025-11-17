@@ -1,0 +1,35 @@
+training:
+  device: "cuda"            # 训练优先跑在 GPU；设为 "auto" 会自动检测
+  epochs: 20                # 最大训练轮次；若早停触发会提前结束
+  early_stopping:
+    enabled: True           # 开启提前停止，防止过拟合和冗余迭代
+    metric: "valid_logloss" # 监控指标（可改为 valid_auc）
+    mode: "min"             # logloss 越小越好；若监控 AUC 则改为 "max"
+    patience: 3             # 指标连续 3 轮无提升就停止
+    delta: 0.0001           # 只有超出该阈值的改善才算“更好”
+
+  optimizer:
+    type: "adamw"            # 自适应梯度优化器，适合稀疏特征
+    lr: 0.01             # 初始学习率
+    weight_decay: 0.0001    # L2 正则系数（对 embedding 很有效）
+
+  lr_scheduler:
+    type: "cosine"            # 若需要衰减，切换为 "step"/"cosine" 并在代码里读取
+    step_size: 5            # StepLR 场景：每隔多少 epoch 衰减一次
+    gamma: 0.5              # 衰减因子，新的 lr = lr * gamma
+
+  loss:
+    type: "binary_cross_entropy"  # 二分类常用的 BCEWithLogitsLoss
+
+  metrics:
+    - "logloss"             # 监控拟合质量
+    - "auc"                 # 衡量排序能力
+
+  checkpoint:
+    save_dir: ""             # 为空时自动用当前 experiment 的 output_dir/checkpoints
+    resume_from:             # 设为某个 ckpt（如 last.pt）即可断点续训
+    save_interval: 5             # 每隔多少个 epoch 额外保存一次
+    max_to_keep: 5               # 最多保留多少个按间隔保存的 ckpt（0=无限制）
+    monitor: "valid_logloss"  # 参考 monitor 指标决定是否保存 best
+    mode: "min"
+    save_best_only: True      # 只保留最优 checkpoint，节省磁盘

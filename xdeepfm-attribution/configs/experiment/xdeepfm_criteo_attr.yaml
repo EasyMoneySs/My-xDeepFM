@@ -1,0 +1,14 @@
+experiment:
+  name: "xdeepfm_criteo_attribution"
+
+  # 引用其它配置文件对应的 node
+  data_config: "configs/data/criteo_attribution.yaml"
+  model_config: "configs/model/xdeepfm.yaml"
+  train_config: "configs/train/default.yaml"
+
+  # 运行输出路径（日志、结果等）
+  output_dir: "./runs/xdeepfm_criteo_attr_4"
+  use_timestamp: true  # 输出目录追加时间戳，便于多次实验区分
+
+  # 随机种子统一配置
+  seed: 42

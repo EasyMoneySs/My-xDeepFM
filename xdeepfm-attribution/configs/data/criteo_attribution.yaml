@@ -1,0 +1,99 @@
+# 数据集配置（指定来源与版本）
+dataset:
+  provider: "huggingface"
+  name: "criteo/criteo-attribution-dataset"
+  # 子集名称（如果有 train/validation/test 子集，可以指定）
+  subset: null
+
+# 训练任务类型与监督标签
+task:
+  type: "binary_classification"
+  label_column: "conversion"       # 可切换为 "click" 或 "conversion"
+
+# 特征声明：按类别/数值分别管理
+features:
+  categorical:
+    - "uid"
+    # - "campaign"
+    - "attribution"
+    - "click"
+    - "cat1"
+    - "cat2"
+    - "cat3"
+    - "cat4"
+    - "cat5"
+    - "cat6"
+    - "cat7"
+    - "cat8"
+    - "cat9"
+
+  numerical:
+    - "timestamp"
+    # - "click"
+    # - "conversion"
+    # - "conversion_id"
+    # - "click_pos"
+    # - "click_nb"
+    # - "cost"
+    # - "cpo"
+    # - "time_since_last_click"
+    # - "attribution"
+    # - "conversion_timestamp"
+
+preprocess:
+  cache_dir: "./cache/hf_datasets"   # 原始数据缓存位置
+  # 处理后的 parquet/cache 输出位置
+  output_dir: "./data/processed/criteo_attribution"
+
+  # 是否基于时间切分（更贴近线上场景）
+  split:
+    strategy: "time"    # "time" 或 "random"
+    time_column: "timestamp"
+    # 按 UID 分组切分，防止同一用户出现在多个划分中
+    group_column: 
+    # 基于 uid 去重，确保同一条样本只保留在优先级靠前的 split 中
+    dedup_column: 
+    dedup_priority:
+      - "test"
+      - "valid"
+      - "train"
+    # 如果是 time 策略，可以按百分位数切分
+    time_split_percentiles:
+      train: 0.7        # 前 70% 时间段
+      valid: 0.15       # 接下来的 15%
+      test: 0.15        # 最后 15%
+
+    random:
+      train_ratio: 0.8
+      valid_ratio: 0.1
+      test_ratio: 0.1
+      seed: 42
+
+  # 类别特征编码策略
+  categorical_encoding:
+    method: "index"     # 将每个字段的取值映射到 0..N 的整数 id
+    min_freq: 10        # 低频类别合并为 OOV
+    oov_token: "__OOV__"
+
+  # 数值特征缺失填充与标准化策略
+  numerical_processing:
+    fill_na: 0.0
+    scaler: "standard"  # "standard", "minmax", or "none"
+    # 如需将时间戳转成“相对秒/小时/天”等特征，可由代码按照此策略实现
+    time_features:
+      enabled: True
+      columns:
+        - "timestamp"
+        - "conversion_timestamp"
+      # 例如生成：相对时间 / 天内小时等
+      derived_features:
+        # - "delta_conversion_time"   # = conversion_timestamp - timestamp（若无转化则设为 0 或 -1）
+        - "day_index"               # = timestamp / (24*3600) 取整
+        - "hour_in_day"             # = (timestamp % (24*3600)) / 3600
+
+# DataLoader 相关设置：控制 batch、并发与内存优化
+dataloader:
+  batch_size: 4096
+  num_workers: 4
+  pin_memory: true
+  shuffle_train: true
